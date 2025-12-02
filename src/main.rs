@@ -20,16 +20,16 @@ fn main() {
         println!("{}  {}", COMPLETE, part1.unwrap_or_default());
         println!("{}  {}", COMPLETE, part2.unwrap_or_default());
     }
-/*
+
     println!("{} {} {}", "----------".red(), "Day  2".bright_green(), "----------".red());
-    println!("\tTBD");
-    if let Ok(input) = day02::prepare("day01.txt") {
+    println!("\tGift Shop");
+    if let Ok(input) = day02::prepare("day02.txt") {
         let part1 = day02::part_1(&input);
         let part2 = day02::part_2(&input);
-        println!("{}  {}", PENDING, part1.unwrap_or_default());
-        println!("{}  {}", PENDING, part2.unwrap_or_default());
+        println!("{}  {}", COMPLETE, part1.unwrap_or_default());
+        println!("{}  {}", COMPLETE, part2.unwrap_or_default());
     }
-
+/*
     println!("{} {} {}", "----------".red(), "Day  3".bright_green(), "----------".red());
     println!("\tTBD");
     if let Ok(input) = day03::prepare("day01.txt") {
