@@ -22,18 +22,16 @@ pub fn is_repeated_sequence(id:u64) -> bool {
     let id_str = id.to_string();
     let max_chunk = id_str.len() / 2;
 
-    (1..=max_chunk)
-        .rev()
-        .map(|chunk| {
-            id_str
-                .chars()
-                .chunks(chunk)
-                .into_iter()
-                .map(|chunk| chunk.collect::<String>())
-                .all_equal_value()
-                .is_ok()
-        })
-        .any(|ok| ok)
+    for chunk in (1..=max_chunk).rev() {
+        if id_str
+            .chars()
+            .chunks(chunk)
+            .into_iter()
+            .map(|chunk| chunk.collect::<String>())
+            .all_equal_value()
+            .is_ok() { return true }
+    }
+    false
 }
 
 pub fn part_1(input: &Vec<(u64, u64)>) -> Option<usize> {
