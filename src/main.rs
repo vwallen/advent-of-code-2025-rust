@@ -29,16 +29,16 @@ fn main() {
         println!("{}  {}", COMPLETE, part1.unwrap_or_default());
         println!("{}  {}", COMPLETE, part2.unwrap_or_default());
     }
-/*
+
     println!("{} {} {}", "----------".red(), "Day  3".bright_green(), "----------".red());
-    println!("\tTBD");
-    if let Ok(input) = day03::prepare("day01.txt") {
+    println!("\tLobby");
+    if let Ok(input) = day03::prepare("day03.txt") {
         let part1 = day03::part_1(&input);
         let part2 = day03::part_2(&input);
-        println!("{}  {}", PENDING, part1.unwrap_or_default());
-        println!("{}  {}", PENDING, part2.unwrap_or_default());
+        println!("{}  {}", INCOMPLETE, part1.unwrap_or_default());
+        println!("{}  {}", INCOMPLETE, part2.unwrap_or_default());
     }
-
+/*
     println!("{} {} {}", "----------".red(), "Day  4".bright_green(), "----------".red());
     println!("\t🎁  TBD");
     if let Ok(input) = day04::prepare("day01.txt") {
