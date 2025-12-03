@@ -14,21 +14,20 @@ pub fn prepare(file_name: &str) -> Result<Vec<Vec<u64>>> {
     Ok(input)
 }
 
+#[inline]
 pub fn find_highest_n(n:usize, batteries:&Vec<u64>) -> u64 {
     let mut digits = vec![0u64; n];
-    let len = batteries.len();
-    for (i, d) in batteries.iter().enumerate() {
-        for j in 0..n {
-            if d > &digits[j] && i < len - (n - (j + 1)) {
-                digits[j] = *d;
-                if j + 1 < n {
-                   digits[j + 1] = 0;
-                }
-                break
+    let mut start = 0;
+    let mut end = batteries.len() - n;
+    for i in 0..n {
+        end += 1;
+        for j in start..end {
+            if batteries[j] > digits[i] {
+                digits[i] = batteries[j];
+                start = j + 1;
             }
         }
     }
-
     digits
         .iter()
         .rev()
@@ -55,11 +54,11 @@ mod test {
 
     #[test]
     fn test_find_highest_n() {
-        assert_eq!(find_highest_n(2,&vec![1,2,3,4,5]), 45);
-        assert_eq!(find_highest_n(2,&vec![1,2,1,5,1]), 51);
-        assert_eq!(find_highest_n(2, &vec![3,5,2,1,5]), 55);
-        assert_eq!(find_highest_n(2, &vec![1,2,4,5,3]), 53);
-        assert_eq!(find_highest_n(2, &vec![4,5,3,2,1]), 53);
+        assert_eq!(find_highest_n(2, &vec![1, 2, 3, 4, 5]), 45);
+        assert_eq!(find_highest_n(2, &vec![1, 2, 1, 5, 1]), 51);
+        assert_eq!(find_highest_n(2, &vec![3, 5, 2, 1, 5]), 55);
+        assert_eq!(find_highest_n(2, &vec![1, 2, 4, 5, 3]), 53);
+        assert_eq!(find_highest_n(2, &vec![4, 5, 3, 2, 1]), 53);
     }
 
     #[test]
