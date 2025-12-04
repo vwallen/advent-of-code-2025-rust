@@ -61,16 +61,18 @@ pub fn update_neighbors(spaces: &Warehouse) {
 }
 
 pub fn remove_rolls(spaces: &mut Warehouse) -> usize {
-    let mut remove = Vec::new();
+    let mut to_remove = Vec::new();
     for ((x, y), space) in spaces.into_iter() {
         let (x, y) = (*x, *y);
         if space.get() < MAX_NEIGHBORS {
-            remove.push((x, y));
+            to_remove.push((x, y));
         }
     }
-    let removed = remove.len();
-    for k in remove.into_iter() {
-        spaces.remove(&k);
+    let mut removed = 0;
+    for k in to_remove.into_iter() {
+        if let Some(_) = spaces.remove(&k) {
+            removed += 1;
+        }
     }
     update_neighbors(&spaces);
     removed
