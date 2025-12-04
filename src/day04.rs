@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use rustc_hash::FxHashMap;
 use crate::read_input_lines;
 use anyhow::Result;
 use std::fmt::Debug;
@@ -11,7 +11,7 @@ pub enum Space {
     Roll(u8),
 }
 
-pub fn prepare(file_name: &str) -> Result<HashMap<(isize, isize), Space>> {
+pub fn prepare(file_name: &str) -> Result<FxHashMap<(isize, isize), Space>> {
     let input = read_input_lines(file_name);
     let output = input
         .iter()
@@ -31,7 +31,7 @@ pub fn prepare(file_name: &str) -> Result<HashMap<(isize, isize), Space>> {
                 })
                 .collect::<Vec<(isize, isize, Space)>>()
         })
-        .fold(HashMap::new(), |mut out, row| {
+        .fold(FxHashMap::default(), |mut out, row| {
             row.into_iter()
                 .for_each(|(x, y, s)| {
                     out.insert((x, y), s);
@@ -41,8 +41,8 @@ pub fn prepare(file_name: &str) -> Result<HashMap<(isize, isize), Space>> {
     Ok(update_neighbors(&output))
 }
 
-pub fn update_neighbors(spaces:&HashMap<(isize, isize), Space>) -> HashMap<(isize, isize), Space> {
-    let mut new_spaces = HashMap::new();
+pub fn update_neighbors(spaces:&FxHashMap<(isize, isize), Space>) -> FxHashMap<(isize, isize), Space> {
+    let mut new_spaces = FxHashMap::default();
     for ((x, y), space) in spaces.into_iter() {
         let (x, y) = (*x, *y);
         match space {
@@ -75,8 +75,8 @@ pub fn update_neighbors(spaces:&HashMap<(isize, isize), Space>) -> HashMap<(isiz
     new_spaces
 }
 
-pub fn remove_rolls(spaces:&HashMap<(isize, isize), Space>) -> (usize, HashMap<(isize, isize), Space>) {
-    let mut new_spaces = HashMap::new();
+pub fn remove_rolls(spaces:&FxHashMap<(isize, isize), Space>) -> (usize, FxHashMap<(isize, isize), Space>) {
+    let mut new_spaces = FxHashMap::default();
     let mut removed = 0;
     for ((x, y), space) in spaces.into_iter() {
         let (x, y) = (*x, *y);
@@ -98,7 +98,7 @@ pub fn remove_rolls(spaces:&HashMap<(isize, isize), Space>) -> (usize, HashMap<(
 }
 
 // Answer: 1349
-pub fn part_1(input: &HashMap<(isize, isize), Space>) -> Option<usize> {
+pub fn part_1(input: &FxHashMap<(isize, isize), Space>) -> Option<usize> {
     let count = input
         .clone()
         .into_values()
@@ -118,7 +118,7 @@ pub fn part_1(input: &HashMap<(isize, isize), Space>) -> Option<usize> {
 }
 
 // Answer: 8277
-pub fn part_2(input: &HashMap<(isize, isize), Space>) -> Option<usize> {
+pub fn part_2(input: &FxHashMap<(isize, isize), Space>) -> Option<usize> {
     let mut total_removed = 0;
     let mut removed = usize::MAX;
     let mut spaces = input.clone();
