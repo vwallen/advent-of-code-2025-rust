@@ -16,7 +16,6 @@ pub fn part_1(input: &Vec<(u64, u64)>) -> Option<usize> {
         .iter()
         .map(|(a, b)| {
             (*a..=*b)
-                .filter(|i| i % 2 == 0)
                 .filter(|i| {
                     let id_str = i.to_string();
                     let parts = id_str.split_at(id_str.len() / 2);

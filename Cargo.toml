@@ -9,7 +9,8 @@ anyhow = "1.0.100"
 colored = "3.0.0"
 itertools = "0.14.0"
 sscanf = "0.4.4"
-divan = "0.1.5"
+divan = "0.1.21"
+clap = { version = "4.5.53", features = ["derive"] }
 
 [[bench]]
 name = "day01"
