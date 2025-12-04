@@ -1,17 +1,12 @@
 use rustc_hash::FxHashMap;
 use crate::read_input_lines;
 use anyhow::Result;
-use std::fmt::Debug;
 
 static MAX_NEIGHBORS:u8 = 4;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Space {
-    Empty,
-    Roll(u8),
-}
+type Warehouse = FxHashMap<(isize, isize), u8>;
 
-pub fn prepare(file_name: &str) -> Result<FxHashMap<(isize, isize), Space>> {
+pub fn prepare(file_name: &str) -> Result<Warehouse> {
     let input = read_input_lines(file_name);
     let output = input
         .iter()
@@ -21,17 +16,17 @@ pub fn prepare(file_name: &str) -> Result<FxHashMap<(isize, isize), Space>> {
             line
                 .chars()
                 .enumerate()
-                .map(|(x, c)| {
+                .filter_map(|(x, c)| {
                     let x = x as isize;
                     if c == '@' {
-                        (x, y, Space::Roll(0))
+                        Some((x, y, 0))
                     } else {
-                        (x, y, Space::Empty)
+                        None
                     }
                 })
-                .collect::<Vec<(isize, isize, Space)>>()
+                .collect::<Vec<(isize, isize, u8)>>()
         })
-        .fold(FxHashMap::default(), |mut out, row| {
+        .fold(Warehouse::default(), |mut out, row| {
             row.into_iter()
                 .for_each(|(x, y, s)| {
                     out.insert((x, y), s);
@@ -41,84 +36,64 @@ pub fn prepare(file_name: &str) -> Result<FxHashMap<(isize, isize), Space>> {
     Ok(update_neighbors(&output))
 }
 
-pub fn update_neighbors(spaces:&FxHashMap<(isize, isize), Space>) -> FxHashMap<(isize, isize), Space> {
-    let mut new_spaces = FxHashMap::default();
-    for ((x, y), space) in spaces.into_iter() {
+pub fn update_neighbors(spaces:&Warehouse) -> Warehouse {
+    let mut new_spaces = Warehouse::default();
+    for ((x, y), _) in spaces.into_iter() {
         let (x, y) = (*x, *y);
-        match space {
-            Space::Empty => {
-                new_spaces.insert((x, y), Space::Empty);
-            },
-            Space::Roll(_) => {
-                let count:u8 = [
-                    (x - 1, y),
-                    (x - 1, y - 1),
-                    (x - 1, y + 1),
-                    (x + 1, y),
-                    (x + 1, y + 1),
-                    (x + 1, y - 1),
-                    (x, y + 1),
-                    (x, y - 1),
-                ]
-                    .into_iter()
-                    .fold(0, |count, (x, y)| {
-                        if let Some(Space::Roll(_)) = spaces.get(&(x, y)) {
-                            count + 1
-                        } else {
-                            count
-                        }
-                    });
-                new_spaces.insert((x, y), Space::Roll(count));
-            }
-        }
+        let count:u8 = [
+            (x - 1, y),
+            (x - 1, y - 1),
+            (x - 1, y + 1),
+            (x + 1, y),
+            (x + 1, y + 1),
+            (x + 1, y - 1),
+            (x, y + 1),
+            (x, y - 1),
+        ]
+            .into_iter()
+            .fold(0, |count, (x, y)| {
+                if let Some(_) = spaces.get(&(x, y)) {
+                    count + 1
+                } else {
+                    count
+                }
+        });
+        new_spaces.insert((x, y), count);
     };
     new_spaces
 }
 
-pub fn remove_rolls(spaces:&FxHashMap<(isize, isize), Space>) -> (usize, FxHashMap<(isize, isize), Space>) {
-    let mut new_spaces = FxHashMap::default();
+pub fn remove_rolls(spaces:&Warehouse) -> (usize, Warehouse) {
+    let mut new_spaces = Warehouse::default();
     let mut removed = 0;
     for ((x, y), space) in spaces.into_iter() {
         let (x, y) = (*x, *y);
-        match space {
-            Space::Empty => {
-                new_spaces.insert((x, y), Space::Empty);
-            },
-            Space::Roll(neighbors) => {
-                if *neighbors < MAX_NEIGHBORS {
-                    removed += 1;
-                    new_spaces.insert((x, y), Space::Empty);
-                } else {
-                    new_spaces.insert((x, y), Space::Roll(*neighbors));
-                }
-            }
+        if *space < MAX_NEIGHBORS {
+            removed += 1;
+        } else {
+            new_spaces.insert((x, y), *space);
         }
     };
     (removed, update_neighbors(&new_spaces))
 }
 
 // Answer: 1349
-pub fn part_1(input: &FxHashMap<(isize, isize), Space>) -> Option<usize> {
+pub fn part_1(input: &Warehouse) -> Option<usize> {
     let count = input
         .clone()
         .into_values()
         .filter_map(|space| {
-            match space {
-                Space::Empty => None,
-                Space::Roll(neighbors) => {
-                    if neighbors < MAX_NEIGHBORS {
-                        Some(neighbors)
-                    } else {
-                        None
-                    }
-                },
+            if space < MAX_NEIGHBORS {
+                Some(space)
+            } else {
+                None
             }
         }).count();
     Some(count)
 }
 
 // Answer: 8277
-pub fn part_2(input: &FxHashMap<(isize, isize), Space>) -> Option<usize> {
+pub fn part_2(input: &Warehouse) -> Option<usize> {
     let mut total_removed = 0;
     let mut removed = usize::MAX;
     let mut spaces = input.clone();
@@ -131,7 +106,6 @@ pub fn part_2(input: &FxHashMap<(isize, isize), Space>) -> Option<usize> {
 
 #[cfg(test)]
 mod test {
-    use crate::day04::Space::{Empty, Roll};
     use super::*;
 
     #[test]
@@ -148,17 +122,17 @@ mod test {
             // . @ @ @ @ @ @ @ @ 4 <---- (9, 8)
             // @ . @ . @ @ @ . @ .
             let input = update_neighbors(&input);
-            assert_eq!(input.get(&(0, 0)), Some(Empty).as_ref());
-            assert_ne!(input.get(&(2, 0)), Some(Empty).as_ref());
-            assert_ne!(input.get(&(8, 0)), Some(Empty).as_ref());
-            assert_eq!(input.get(&(9, 9)), Some(Empty).as_ref());
-            if let Some(Roll(neighbors)) = input.get(&(2, 0)) {
+            assert_eq!(input.get(&(0, 0)), None);
+            assert_ne!(input.get(&(2, 0)), None);
+            assert_ne!(input.get(&(8, 0)), None);
+            assert_eq!(input.get(&(9, 9)), None);
+            if let Some(neighbors) = input.get(&(2, 0)) {
                 assert_eq!(*neighbors, 3);
             }
-            if let Some(Roll(neighbors)) = input.get(&(4, 4)) {
+            if let Some(neighbors) = input.get(&(4, 4)) {
                 assert_eq!(*neighbors, 8);
             }
-            if let Some(Roll(neighbors)) = input.get(&(9, 8)) {
+            if let Some(neighbors) = input.get(&(9, 8)) {
                 assert_eq!(*neighbors, 4);
             }
         }
