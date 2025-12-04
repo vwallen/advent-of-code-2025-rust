@@ -83,13 +83,7 @@ pub fn part_1(input: &Warehouse) -> Option<usize> {
     let count = input
         .clone()
         .into_values()
-        .filter_map(|space| {
-            if space.get() < MAX_NEIGHBORS {
-                Some(space)
-            } else {
-                None
-            }
-        })
+        .filter(|space| space.get() < MAX_NEIGHBORS)
         .count();
     Some(count)
 }
