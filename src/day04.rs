@@ -1,10 +1,11 @@
+use std::cell::Cell;
 use rustc_hash::FxHashMap;
 use crate::read_input_lines;
 use anyhow::Result;
 
 static MAX_NEIGHBORS:u8 = 4;
 
-type Warehouse = FxHashMap<(isize, isize), u8>;
+type Warehouse = FxHashMap<(isize, isize), Cell<u8>>;
 
 pub fn prepare(file_name: &str) -> Result<Warehouse> {
     let input = read_input_lines(file_name);
@@ -28,17 +29,17 @@ pub fn prepare(file_name: &str) -> Result<Warehouse> {
         })
         .fold(Warehouse::default(), |mut out, row| {
             row.into_iter()
-                .for_each(|(x, y, s)| {
-                    out.insert((x, y), s);
+                .for_each(|(x, y, space)| {
+                    out.insert((x, y), Cell::new(space));
                 });
             out
         });
-    Ok(update_neighbors(&output))
+    update_neighbors(&output);
+    Ok(output)
 }
 
-pub fn update_neighbors(spaces:&Warehouse) -> Warehouse {
-    let mut new_spaces = Warehouse::default();
-    for ((x, y), _) in spaces.into_iter() {
+pub fn update_neighbors(spaces:&Warehouse) {
+    for ((x, y), space) in spaces.into_iter() {
         let (x, y) = (*x, *y);
         let count:u8 = [
             (x - 1, y),
@@ -58,23 +59,26 @@ pub fn update_neighbors(spaces:&Warehouse) -> Warehouse {
                     count
                 }
         });
-        new_spaces.insert((x, y), count);
+        space.set(count);
     };
-    new_spaces
 }
 
-pub fn remove_rolls(spaces:&Warehouse) -> (usize, Warehouse) {
-    let mut new_spaces = Warehouse::default();
-    let mut removed = 0;
+pub fn remove_rolls(spaces:&mut Warehouse) -> usize {
+    let mut remove = Vec::new();
     for ((x, y), space) in spaces.into_iter() {
         let (x, y) = (*x, *y);
-        if *space < MAX_NEIGHBORS {
-            removed += 1;
+        if space.get() < MAX_NEIGHBORS {
+            remove.push((x, y));
         } else {
-            new_spaces.insert((x, y), *space);
+            space.set(space.get());
         }
     };
-    (removed, update_neighbors(&new_spaces))
+    let removed = remove.len();
+    for k in remove.into_iter() {
+        spaces.remove(&k);
+    }
+    update_neighbors(&spaces);
+    removed
 }
 
 // Answer: 1349
@@ -83,7 +87,7 @@ pub fn part_1(input: &Warehouse) -> Option<usize> {
         .clone()
         .into_values()
         .filter_map(|space| {
-            if space < MAX_NEIGHBORS {
+            if space.get() < MAX_NEIGHBORS {
                 Some(space)
             } else {
                 None
@@ -96,9 +100,9 @@ pub fn part_1(input: &Warehouse) -> Option<usize> {
 pub fn part_2(input: &Warehouse) -> Option<usize> {
     let mut total_removed = 0;
     let mut removed = usize::MAX;
-    let mut spaces = input.clone();
+    let mut input = input.clone();
     while removed > 0 {
-        (removed, spaces) = remove_rolls(&spaces);
+        removed = remove_rolls(&mut input);
         total_removed += removed;
     };
     Some(total_removed)
@@ -121,19 +125,19 @@ mod test {
             // @ . @ @ @ . @ @ @ @
             // . @ @ @ @ @ @ @ @ 4 <---- (9, 8)
             // @ . @ . @ @ @ . @ .
-            let input = update_neighbors(&input);
+            update_neighbors(&input);
             assert_eq!(input.get(&(0, 0)), None);
             assert_ne!(input.get(&(2, 0)), None);
             assert_ne!(input.get(&(8, 0)), None);
             assert_eq!(input.get(&(9, 9)), None);
             if let Some(neighbors) = input.get(&(2, 0)) {
-                assert_eq!(*neighbors, 3);
+                assert_eq!(neighbors.get(), 3);
             }
             if let Some(neighbors) = input.get(&(4, 4)) {
-                assert_eq!(*neighbors, 8);
+                assert_eq!(neighbors.get(), 8);
             }
             if let Some(neighbors) = input.get(&(9, 8)) {
-                assert_eq!(*neighbors, 4);
+                assert_eq!(neighbors.get(), 4);
             }
         }
     }
