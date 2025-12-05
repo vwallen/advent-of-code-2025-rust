@@ -70,7 +70,7 @@ fn main() {
     if args.day == 5 || args.day == 0 {
         println!("{} {} {}", "\n----------".red(), "Day  5".bright_green(), "----------".red());
         println!("{: ^28}", PENDING);
-        if let Ok(input) = day05::prepare("day01.txt") {
+        if let Ok(input) = day05::prepare("day05.txt") {
             let part1 = day05::part_1(&input);
             let part2 = day05::part_2(&input);
             println!("{}  {}", PENDING, part1.unwrap_or_default());
