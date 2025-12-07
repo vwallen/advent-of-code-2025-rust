@@ -84,19 +84,19 @@ fn main() {
         if let Ok(input) = day06::prepare("day06.txt") {
             let part1 = day06::part_1(&input);
             let part2 = day06::part_2(&input);
-            println!("{}  {}", INCOMPLETE, part1.unwrap_or_default());
-            println!("{}  {}", INCOMPLETE, part2.unwrap_or_default());
+            println!("{}  {}", COMPLETE, part1.unwrap_or_default());
+            println!("{}  {}", COMPLETE, part2.unwrap_or_default());
         }
     }
 
     if args.day == 7 || args.day == 0 {
         println!("{} {} {}", "\n----------".red(), "Day  7".bright_green(), "----------".red());
-        println!("{: ^28}", PENDING);
+        println!("{: ^28}", "Laboratories");
         if let Ok(input) = day07::prepare("day07.txt") {
             let part1 = day07::part_1(&input);
             let part2 = day07::part_2(&input);
-            println!("{}  {}", PENDING, part1.unwrap_or_default());
-            println!("{}  {}", PENDING, part2.unwrap_or_default());
+            println!("{}  {}", INCOMPLETE, part1.unwrap_or_default());
+            println!("{}  {}", INCOMPLETE, part2.unwrap_or_default());
         }
     }
 

@@ -22,7 +22,7 @@ mod test {
     #[test]
     #[ignore]
     fn test_part_1() {
-        if let Ok(input) = prepare("day01-example.txt") {
+        if let Ok(input) = prepare("day12-example.txt") {
             assert_eq!(part_1(&input), Some(1))
         }
     }
@@ -30,7 +30,7 @@ mod test {
     #[test]
     #[ignore]
     fn test_part_2() {
-        if let Ok(input) = prepare("day01-example.txt") {
+        if let Ok(input) = prepare("day12-example.txt") {
             assert_eq!(part_2(&input), Some(1))
         }
     }
