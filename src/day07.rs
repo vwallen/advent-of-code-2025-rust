@@ -1,16 +1,22 @@
-use std::collections::HashSet;
 use crate::read_input_lines;
 use anyhow::Result;
+use std::collections::HashSet;
 
 pub fn prepare(file_name: &str) -> Result<Vec<String>> {
     let input = read_input_lines(file_name);
     Ok(input)
 }
 
-//Answer: 1672
-pub fn part_1(input: &Vec<String>) -> Option<usize> {
-    let mut split_count = 1;
-    let _beams:HashSet<usize> = input.into_iter()
+pub fn fire_beams(input: &Vec<String>) -> Option<(usize, usize)> {
+    let mut split_count = 0;
+    let mut paths:Vec<usize> = vec![];
+
+    if let Some(line) = input.first() {
+        paths = vec![0; line.len()];
+        paths[line.len() / 2] = 1;
+    }
+
+    input.into_iter()
         .map(|line| {
             line.chars()
                 .enumerate()
@@ -18,32 +24,54 @@ pub fn part_1(input: &Vec<String>) -> Option<usize> {
                 .collect::<HashSet<usize>>()
         })
         .filter(|s| !s.is_empty())
-        .reduce(|a, b| {
+        .enumerate()
+        .reduce(|(_, a), (by, b)| {
             let splits = a.intersection(&b)
                 .map(|aa| {
+
                     split_count += 1;
+
+                    paths[aa - 1] += paths[*aa];
+                    paths[aa + 1] += paths[*aa];
+                    paths[*aa] = 0;
+
                     vec![aa - 1, aa + 1].into_iter()
                 })
                 .flatten()
                 .collect::<HashSet<usize>>();
             let passthrough = a.difference(&b).map(|a| *a ).collect();
             let beams = splits.union(&passthrough).map(|a| *a).collect::<HashSet<usize>>();
-            beams
-        }).unwrap();
 
-    split_count -= 1;
+            (by, beams)
+        });
 
-    Some(split_count)
+    let path_count:usize = paths.iter().sum();
+
+    Some((split_count, path_count))
 }
 
-pub fn part_2(_input: &Vec<String>) -> Option<usize> {
-    None
+//Answer: 1,672
+pub fn part_1(input: &Vec<String>) -> Option<usize> {
+    if let Some((split_count, _)) = fire_beams(&input) {
+        Some(split_count)
+    } else {
+        None
+    }
+}
+
+// Answer: 231,229,866,702,355
+pub fn part_2(input: &Vec<String>) -> Option<usize> {
+    if let Some((_, path_count)) = fire_beams(&input) {
+        Some(path_count)
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]
 mod test {
-
     use super::*;
+
 
     #[test]
     fn test_part_1() {
@@ -53,10 +81,9 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn test_part_2() {
         if let Ok(input) = prepare("day07-example.txt") {
-            assert_eq!(part_2(&input), Some(1))
+            assert_eq!(part_2(&input), Some(40))
         }
     }
 }

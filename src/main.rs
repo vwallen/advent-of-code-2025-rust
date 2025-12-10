@@ -94,9 +94,9 @@ fn main() {
         println!("{: ^28}", "Laboratories");
         if let Ok(input) = day07::prepare("day07.txt") {
             let part1 = day07::part_1(&input);
+            println!("{}  {}", COMPLETE, part1.unwrap_or_default());
             let part2 = day07::part_2(&input);
-            println!("{}  {}", INCOMPLETE, part1.unwrap_or_default());
-            println!("{}  {}", INCOMPLETE, part2.unwrap_or_default());
+            println!("{}  {}", COMPLETE, part2.unwrap_or_default());
         }
     }
 
