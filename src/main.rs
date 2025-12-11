@@ -102,7 +102,7 @@ fn main() {
 
     if args.day == 8 || args.day == 0 {
         println!("{} {} {}", "\n----------".red(), "Day  8".bright_green(), "----------".red());
-        println!("{: ^28}", PENDING);
+        println!("{: ^28}", "Playground");
         if let Ok(input) = day08::prepare("day08.txt") {
             let part1 = day08::part_1(&input);
             let part2 = day08::part_2(&input);

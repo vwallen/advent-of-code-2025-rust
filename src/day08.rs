@@ -1,7 +1,7 @@
 use crate::read_input_lines;
 use anyhow::Result;
+use std::collections::{HashSet, VecDeque};
 use itertools::Itertools;
-use std::collections::HashSet;
 
 type Point = (u64, u64, u64);
 
@@ -23,47 +23,66 @@ pub fn calc(a:&Point, b:&Point) -> f64 {
     ((x.pow(2) + y.pow(2) + z.pow(2)) as f64).sqrt()
 }
 
-pub fn part_1(input: &Vec<Point>) -> Option<usize> {
+pub fn connect_circuits(input: &Vec<Point>, limit:usize) -> Option<(usize, usize)> {
 
-    let mut dist:Vec<(f64, Point, Point)> = Vec::new();
+    let mut circuits:VecDeque<HashSet<Point>> = VecDeque::new();
+    let mut distances:Vec<(f64, Point, Point)> = Vec::new();
     let mut points = input.into_iter();
     while let Some(p1) = points.next() {
+        circuits.push_back(HashSet::from([*p1]));
         let tail = points.clone();
         for p2 in tail {
-            dist.push((calc(p1, p2), *p1, *p2));
+            distances.push((calc(p1, p2), *p1, *p2));
         }
     }
+    distances.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
 
-    dist.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    let mut last:(Point, Point) = ((0,0,0), (0,0,0));
 
-    let mut circuits:Vec<HashSet<Point>> = Vec::new();
-    for (_, p1, p2) in dist {
-        if let Some(idx) = circuits
-            .clone()
-            .into_iter()
-            .filter(|c| {
-                !(c.contains(&p1) && c.contains(&p2))
-            })
-            .position(|c| {
-                c.contains(&p1) || c.contains(&p2)
-            })
-        {
-            circuits[idx].insert(p1);
-            circuits[idx].insert(p2);
-        } else {
-            circuits.push(vec![p1, p2].into_iter().collect());
+    for (i, (_, p1, p2)) in distances.into_iter().enumerate() {
+
+        if limit > 0 && i == limit { break; }
+
+        let mut circuit:HashSet<Point> = HashSet::from([p1, p2]);
+        for _ in 0..circuits.len() {
+            let next = circuits.pop_front().unwrap();
+            if next.is_disjoint(&circuit) {
+                circuits.push_back(next);
+            } else {
+                circuit = next.union(&circuit).map(|p| *p).collect();
+            }
         }
+        circuits.push_back(circuit);
+
+        last = (p1, p2);
+
+        if circuits.len() == 1 { break; }
     }
 
-    circuits.sort_by(|a, b| a.len().partial_cmp(&b.len()).unwrap());
+    let part_1:usize = circuits
+        .iter()
+        .map(|c| c.len())
+        .sorted()
+        .rev()
+        .take(3)
+        .product();
 
-    // print!("{:#?}", circuits);
+    let part_2 = (last.0.0 * last.1.0) as usize;
 
-    Some(0)
+
+    Some((part_1, part_2))
 }
 
-pub fn part_2(_input: &Vec<(u64, u64, u64)>) -> Option<usize> {
-    None
+// Answer: 81536
+pub fn part_1(input: &Vec<Point>) -> Option<usize> {
+    let (answer, _) = connect_circuits(input, 1000).unwrap();
+    Some(answer)
+}
+
+// Answer: 7017750530
+pub fn part_2(input: &Vec<(u64, u64, u64)>) -> Option<usize> {
+    let (_, answer) = connect_circuits(input, 0).unwrap();
+    Some(answer)
 }
 
 #[cfg(test)]
@@ -73,20 +92,18 @@ mod test {
     #[test]
     fn test_part_1() {
         if let Ok(input) = prepare("day08-example.txt") {
-
-            let answer = part_1(&input).unwrap();
-
-            println!("\n----> {answer}\n");
-
-            // assert_eq!(part_1(&input), Some(40))
+            if let Some((answer, _)) = connect_circuits(&input, 10) {
+                assert_eq!(answer, 40)
+            }
         }
     }
 
     #[test]
-    #[ignore]
     fn test_part_2() {
         if let Ok(input) = prepare("day08-example.txt") {
-            assert_eq!(part_2(&input), Some(1))
+            if let Some((_, answer)) = connect_circuits(&input, 0) {
+                assert_eq!(answer, 25272)
+            }
         }
     }
 }
