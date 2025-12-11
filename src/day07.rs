@@ -35,7 +35,7 @@ pub fn fire_beams(input: &Vec<String>) -> Option<(usize, usize)> {
                     paths[aa + 1] += paths[*aa];
                     paths[*aa] = 0;
 
-                    vec![aa - 1, aa + 1].into_iter()
+                    HashSet::from([aa - 1, aa + 1])
                 })
                 .flatten()
                 .collect::<HashSet<usize>>();

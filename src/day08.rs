@@ -40,12 +40,12 @@ pub fn connect_circuits(input: &Vec<Point>, limit:usize) -> Option<(usize, usize
 
     let mut circuits:VecDeque<HashSet<Point>> = VecDeque::new();
     let mut distances:Vec<(f64, Point, Point)> = Vec::new();
-    let mut points = input.into_iter();
-    let mut last:(Point, Point) = ((0,0,0), (0,0,0));
+    let mut junctions = input.into_iter();
+    let mut last_connection:(Point, Point) = ((0, 0, 0), (0, 0, 0));
 
-    while let Some(p1) = points.next() {
+    while let Some(p1) = junctions.next() {
         circuits.push_back(HashSet::from([*p1]));
-        let tail = points.clone();
+        let tail = junctions.clone();
         for p2 in tail {
             distances.push((calculate_distance(p1, p2), *p1, *p2));
         }
@@ -68,7 +68,7 @@ pub fn connect_circuits(input: &Vec<Point>, limit:usize) -> Option<(usize, usize
         circuits.push_back(circuit);
 
         if circuits.len() == 1 {
-            last = (p1, p2);
+            last_connection = (p1, p2);
             break;
         }
     }
@@ -81,7 +81,7 @@ pub fn connect_circuits(input: &Vec<Point>, limit:usize) -> Option<(usize, usize
         .take(3)
         .product();
 
-    let part_2 = (last.0.0 * last.1.0) as usize;
+    let part_2 = (last_connection.0.0 * last_connection.1.0) as usize;
 
     Some((part_1, part_2))
 }
