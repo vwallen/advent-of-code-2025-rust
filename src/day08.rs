@@ -15,7 +15,20 @@ pub fn prepare(file_name: &str) -> Result<Vec<Point>> {
     Ok(input)
 }
 
-pub fn calc(a:&Point, b:&Point) -> f64 {
+// Answer: 81536
+pub fn part_1(input: &Vec<Point>) -> Option<usize> {
+    let (answer, _) = connect_circuits(input, 1000).unwrap();
+    Some(answer)
+}
+
+// Answer: 7017750530
+pub fn part_2(input: &Vec<(u64, u64, u64)>) -> Option<usize> {
+    let (_, answer) = connect_circuits(input, 0).unwrap();
+    Some(answer)
+}
+
+#[inline]
+pub fn calculate_distance(a:&Point, b:&Point) -> f64 {
     let x = a.0.abs_diff(b.0);
     let y = a.1.abs_diff(b.1);
     let z = a.2.abs_diff(b.2);
@@ -28,16 +41,16 @@ pub fn connect_circuits(input: &Vec<Point>, limit:usize) -> Option<(usize, usize
     let mut circuits:VecDeque<HashSet<Point>> = VecDeque::new();
     let mut distances:Vec<(f64, Point, Point)> = Vec::new();
     let mut points = input.into_iter();
+    let mut last:(Point, Point) = ((0,0,0), (0,0,0));
+
     while let Some(p1) = points.next() {
         circuits.push_back(HashSet::from([*p1]));
         let tail = points.clone();
         for p2 in tail {
-            distances.push((calc(p1, p2), *p1, *p2));
+            distances.push((calculate_distance(p1, p2), *p1, *p2));
         }
     }
     distances.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-
-    let mut last:(Point, Point) = ((0,0,0), (0,0,0));
 
     for (i, (_, p1, p2)) in distances.into_iter().enumerate() {
 
@@ -54,9 +67,10 @@ pub fn connect_circuits(input: &Vec<Point>, limit:usize) -> Option<(usize, usize
         }
         circuits.push_back(circuit);
 
-        last = (p1, p2);
-
-        if circuits.len() == 1 { break; }
+        if circuits.len() == 1 {
+            last = (p1, p2);
+            break;
+        }
     }
 
     let part_1:usize = circuits
@@ -69,20 +83,7 @@ pub fn connect_circuits(input: &Vec<Point>, limit:usize) -> Option<(usize, usize
 
     let part_2 = (last.0.0 * last.1.0) as usize;
 
-
     Some((part_1, part_2))
-}
-
-// Answer: 81536
-pub fn part_1(input: &Vec<Point>) -> Option<usize> {
-    let (answer, _) = connect_circuits(input, 1000).unwrap();
-    Some(answer)
-}
-
-// Answer: 7017750530
-pub fn part_2(input: &Vec<(u64, u64, u64)>) -> Option<usize> {
-    let (_, answer) = connect_circuits(input, 0).unwrap();
-    Some(answer)
 }
 
 #[cfg(test)]
